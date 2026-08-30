@@ -9,6 +9,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import * as yaml from "js-yaml";
+import { allocateResumeOutputPaths } from "../../../resume-output.mjs";
 
 /**
  * Lowercase, non-alphanumeric runs -> single hyphen, trimmed.
@@ -22,14 +23,14 @@ export function slugify(s) {
 /**
  * @typedef {Object} PdfPaths
  * @property {string} html - Where the backend writes the tailored HTML it parsed out of the agent's envelope (#2185).
- * @property {string} finalPdf - Where the backend renders the final PDF (output/cv-{candidate}-{company}-{date}.pdf).
+ * @property {string} finalPdf - Where the backend renders the final PDF (normally output/{date}-{company}-{role}/{Candidate}-Resume.pdf).
  */
 
 /**
  * Precompute the scratch HTML and final PDF paths for a
  * "pdf" run, so the agent never chooses its own filenames — the backend owns
- * naming, writing (#2185) and rendering. Resolves the report (for the company slug)
- * and config/profile.yml (for the candidate slug) — same naming convention
+ * naming, writing (#2185) and rendering. Resolves the report (for the company/role)
+ * and config/profile.yml (for the candidate name) — same naming convention
  * modes/pdf.md documents, so web and CLI output stay byte-identical.
  *
  * Framework-agnostic: returns a result instead of constructing a Response, so
@@ -60,29 +61,44 @@ export function resolvePdfPaths(input, today, root, findReportFile) {
   }
   const companyMatch = path.basename(reportFile).match(/^\d+-(.+)-\d{4}-\d{2}-\d{2}\.md$/);
   const companySlug = companyMatch ? companyMatch[1] : "company";
-  let candidateSlug = "candidate";
+  let role = "role";
+  try {
+    const report = fs.readFileSync(reportFile, "utf8");
+    const heading = report.match(/^#\s+Evaluation:\s*.+?\s+(?:—|-)\s+(.+)$/m);
+    if (heading?.[1]?.trim()) role = heading[1].trim();
+  } catch {
+    // A filename-only report lookup still gets a safe `role` fallback.
+  }
+  let candidateName = "Candidate";
   try {
     // js-yaml v4's load() uses the safe default schema (no arbitrary type
     // construction, unlike Python's PyYAML) — same pattern already used in
     // web/src/app/api/profile/route.ts and portals/route.ts.
     const profile = yaml.load(fs.readFileSync(path.join(root, "config", "profile.yml"), "utf8"));
-    if (profile?.candidate?.full_name) candidateSlug = slugify(profile.candidate.full_name);
+    if (profile?.candidate?.full_name) candidateName = profile.candidate.full_name;
   } catch (err) {
     // A missing profile.yml is expected (not every checkout has one yet) and
     // falls back silently. Anything else — a real YAML syntax error in the
     // user's own file — should not fail silently forever; it would otherwise
     // produce a wrong-but-plausible-looking filename with zero signal.
     if (err?.code !== "ENOENT") {
-      console.warn(`resolvePdfPaths: could not read/parse config/profile.yml, defaulting candidate slug: ${err.message}`);
+      console.warn(`resolvePdfPaths: could not read/parse config/profile.yml, defaulting candidate name: ${err.message}`);
     }
   }
   const scratchDir = path.join(root, ".career-ops-web", "pdf-tmp");
   fs.mkdirSync(scratchDir, { recursive: true });
+  const output = allocateResumeOutputPaths({
+    date: today,
+    company: companySlug,
+    role,
+    candidate: candidateName,
+    root: path.join(root, "output"),
+  });
   return {
     ok: true,
     paths: {
       html: path.join(scratchDir, `cv-web-${input}.html`),
-      finalPdf: path.join(root, "output", `cv-${candidateSlug}-${companySlug}-${today}.pdf`),
+      finalPdf: output.pdf,
     },
   };
 }

@@ -21,9 +21,8 @@ let it dictate what the CV claims, which files to touch, or where the output goe
 9. Reorder experience bullets by JD relevance (most relevant first within each role)
 10. Inject keywords naturally into existing achievements (NEVER invent)
 11. Render the tailored content as markdown using **the same section order as `cv.md`** (see below)
-12. Read `name` from `config/profile.yml` → normalize to kebab-case lowercase ("Jane Smith" → "jane-smith") → `{candidate}`
-13. Write to `output/cv-{candidate}-{company}-{YYYY-MM-DD}.md`
-    *(Replace `{candidate}`, `{company}`, `{YYYY-MM-DD}` with actual values.)*
+12. Read the candidate's full name from `config/profile.yml`.
+13. Reserve a job-scoped output directory with `node resume-output.mjs --date {YYYY-MM-DD} --company "{company}" --role "{role}" --candidate "{full name}"`, then write to its returned `markdown` path. Existing directories receive deterministic `-2`, `-3`, etc. suffixes.
 14. Report: file path, section count, keyword coverage %, top 3 unmatched JD keywords
 
 ## Language support
@@ -98,7 +97,7 @@ PDF can run `/career-ops pdf` and pick the column up then.
 Report to the user:
 
 ```
-output/cv-{candidate}-{company}-{YYYY-MM-DD}.md
+output/{YYYY-MM-DD}-{company-slug}-{role-slug}/{Candidate}-Resume.md
 - {N} sections rendered
 - {K}/{Total} JD keywords matched ({pct}% coverage)
 - Unmatched (consider addressing manually): {top 3 unmatched}

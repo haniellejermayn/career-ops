@@ -8,16 +8,16 @@ career-ops already *generates* ATS-optimized CVs (see `modes/pdf.md`) and guards
 
 ## Inputs
 
-- A generated CV HTML file (e.g. `output/cv-{candidate}-{company}.html`).
+- A generated CV HTML file (e.g. `output/{date}-{company-slug}-{role-slug}/{Candidate}-Resume.html`).
 - Optional target keywords (`--keywords` / `--role`) for an advisory keyword-coverage read.
 
 ## Usage
 
 ```bash
-node verify-ats.mjs output/cv-jane-smith-acme.html
-node verify-ats.mjs output/cv-jane-smith-acme.html --keywords "python,kubernetes,rag"
-node verify-ats.mjs output/cv-jane-smith-acme.html --role "Senior Backend Engineer"
-node verify-ats.mjs output/cv-jane-smith-acme.html --min-score 80 --json
+node verify-ats.mjs output/2026-08-30-acme-senior-backend-engineer/Jane-Smith-Resume.html
+node verify-ats.mjs output/2026-08-30-acme-senior-backend-engineer/Jane-Smith-Resume.html --keywords "python,kubernetes,rag"
+node verify-ats.mjs output/2026-08-30-acme-senior-backend-engineer/Jane-Smith-Resume.html --role "Senior Backend Engineer"
+node verify-ats.mjs output/2026-08-30-acme-senior-backend-engineer/Jane-Smith-Resume.html --min-score 80 --json
 ```
 
 Flags:
@@ -57,7 +57,7 @@ When `--keywords` or `--role` is supplied, the checker reports how many target k
 ## Suggested workflow
 
 1. Generate a CV via `pdf` mode (through the fact gate).
-2. Run `node verify-ats.mjs output/cv-{candidate}-{company}.html`.
+2. Run `node verify-ats.mjs {job-scoped-html-path}`.
 3. Fix any `critical`/`warning` items (usually in the template or the render payload), then re-run.
 4. Optionally pass the JD's keywords with `--keywords` to confirm coverage before rendering the PDF.
 5. Relay the result to the user: `[Render in {language.output}: the score and grade, then each issue's meaning and how to fix it, and the keyword-coverage line if present]`.

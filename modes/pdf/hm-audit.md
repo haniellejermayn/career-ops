@@ -28,10 +28,10 @@ Requires a tailored CV produced by `modes/pdf.md`. Normally that CV was just bui
 3. **JD** at `jds/{slug}.md`, or fetched from the report's `**URL:**`.
 4. **Tailored bullets** — resolve the artifact for *this* role, in order. Never parse the `.pdf`.
    1. `/tmp/cv-{candidate}-{company}.json` from the same session — the cleanest source (`experience[].bullets[]`). This is the usual case, since the audit runs in the same `pdf` flow that wrote it.
-   2. The `html` column recorded for this report in `data/pdf-index.tsv` (`report \t pdf \t html \t format \t date`, written by `generate-pdf.mjs`). Look the row up by report number. This resolves both layouts: a bundle's `cv/tailored/vNNN/cv.html` and a flat `output/cv-{candidate}-{company}.html`.
+   2. The `html` column recorded for this report in `data/pdf-index.tsv` (`report \t pdf \t html \t format \t date`, written by `generate-pdf.mjs`). Look the row up by report number. This resolves both layouts: a bundle's `cv/tailored/vNNN/cv.html` and a shallow job-scoped `output/{date}-{company}-{role}/{Candidate}-Resume.html`.
    3. A path the user supplies explicitly.
 
-   Only if none of those resolve, fall back to the newest `output/cv-*-{company}.html` — and say so, because a company with two open roles produces several files whose names carry the candidate and company but not the role. Auditing the wrong CV silently is worse than asking. When reading HTML, take the `<li>` items, which the generator emits only for experience and project bullets.
+   Only if none of those resolve, fall back to the newest `*-Resume.html` inside a matching `output/*-{company}-*/` job directory — and say so, because a company with two open roles can still have several application directories. Auditing the wrong CV silently is worse than asking. When reading HTML, take the `<li>` items, which the generator emits only for experience and project bullets.
 5. **Factual floor** — run `node jd-skill-gap.mjs jds/{slug}.md --summary` for the zero-LLM classification of every JD requirement into `existing` / `supportedByResume` / `gap`.
 
    If it prints a `🚨 LOW CONFIDENCE` diagnosis (`no-requirements-section`, `no-skill-candidates`, or `empty-jd`), the check did not run and an empty `gap` list is **not** "no gaps." Treat the classification as unavailable and brief the reviewer per Step 3 — never hand over empty buckets, which read as fit confirmation the check never established.

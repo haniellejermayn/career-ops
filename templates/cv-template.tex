@@ -1,4 +1,4 @@
-%-------------------------
+﻿%-------------------------
 % Career-Ops LaTeX CV Template
 % Based on: Gabriel Sison / sb2nov resume template
 % License: MIT
@@ -67,12 +67,14 @@
       \textbf{#1} & \textbf{\small #2} \\
     \end{tabular*}\vspace{-7pt}
 }
-\newcommand{\resumeSubItem}[1]{\resumeItem{#1}\vspace{0pt}}
+\newcommand{\resumeSubItem}[1]{\resumeItem{#1}}
 \renewcommand\labelitemi{$\vcenter{\hbox{\tiny$\bullet$}}$}
 \renewcommand\labelitemii{$\vcenter{\hbox{\tiny$\bullet$}}$}
 \newcommand{\resumeSubHeadingListStart}{\begin{itemize}[leftmargin=0.0in, label={}]}
 \newcommand{\resumeSubHeadingListEnd}{\end{itemize}}
-\newcommand{\resumeItemListStart}{\begin{itemize}[itemsep=-3pt, parsep=0pt, topsep=0pt, partopsep=0pt]}
+\newcommand{\resumeItemListStart}[1]{\vspace{#1}\begin{itemize}[itemsep=0pt, parsep=0pt, topsep=0pt, partopsep=0pt]}
+\newcommand{\resumeExperienceItemListStart}{\resumeItemListStart{1pt}}
+\newcommand{\resumeProjectItemListStart}{\resumeItemListStart{-6pt}}
 \newcommand{\resumeItemListEnd}{\end{itemize}\vspace{0pt}}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%  Heading  %%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -129,3 +131,5 @@
 %%%%  END  %%%%
 
 \end{document}
+
+

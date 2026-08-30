@@ -14,12 +14,15 @@ Export a tailored, ATS-optimized CV as a `.tex` file and compile it to PDF via `
 8. Select top 3-4 most relevant projects for the offer, and populate `awards[]` from `cv.md`'s Awards / Honors section when it has entries that support the role (omit the key otherwise — the section is dropped, header included; never invent an award)
 9. Reorder experience bullets by JD relevance
 10. Inject keywords naturally into existing achievements
-11. Build a JSON payload (see schema below) and write to `/tmp/cv-{candidate}-{company}.json`
-12. Run: `node build-cv-latex.mjs /tmp/cv-{candidate}-{company}.json output/cv-{candidate}-{company}-{YYYY-MM-DD}.tex`
-13. Run: `node generate-latex.mjs output/cv-{candidate}-{company}-{YYYY-MM-DD}.tex output/cv-{candidate}-{company}-{YYYY-MM-DD}.pdf`
-    *(Replace `{candidate}`, `{company}`, `{YYYY-MM-DD}` with actual values.)*
-14. Read `generate-latex.mjs`'s `layoutValidation` result. ERROR findings require a natural rewrite and another compile; WARNING findings should be addressed when wording can remain natural.
-15. Report: .tex path, .pdf path, file sizes, section count, keyword coverage %, and deterministic layout findings. Never report layout QA as passed while `layoutValidation.valid` is false.
+11. Reserve a job-scoped output directory: `node resume-output.mjs --date {YYYY-MM-DD} --company "{company}" --role "{role}" --candidate "{full name}"`. Use the printed `tex` and `pdf` paths for this run. The allocator creates `output/{date}-{company-slug}-{role-slug}/` and advances to `-2`, `-3`, etc. instead of reusing an existing directory.
+12. Build a JSON payload (see schema below) and write it to `/tmp/cv-{candidate}-{company}.json`.
+13. Run: `node build-cv-latex.mjs /tmp/cv-{candidate}-{company}.json {tex-path}`.
+14. Run: `node generate-latex.mjs {tex-path} {pdf-path}`. The filenames share the short professional basename returned by `resume-output.mjs` (for example, `Hanielle-Chua-Resume.tex` and `Hanielle-Chua-Resume.pdf`).
+15. Read `generate-latex.mjs`'s `layoutValidation` result. Keep the orphan-line rules unchanged: a 1-2 word continuation or a final continuation below 25% width is an ERROR; a final continuation below 50% width is a WARNING.
+16. For a one-page resume, also inspect the deterministic `pageUtilization` result. More than 36 pt of unused height inside the template's usable content region is a WARNING; more than 58 pt is an ERROR that requires reconsidering content before delivery. The page-edge bottom margin is excluded from this measurement.
+17. When page utilization warns or errors and relevant source evidence remains, use the existing content hierarchy: (1) add or strengthen high-impact bullets under current/recent Work or Internship Experience, (2) add useful impact evidence to other selected internships, and only then (3) consider another highly relevant technical project. Prefer internship impact over increasing the project count for an early-career candidate. Never add leadership, extracurriculars, old awards, weak claims, or irrelevant detail merely to fill space.
+18. Do not mechanically add content just because space exists, and do not auto-enlarge fonts or spacing. If all remaining source evidence is weak or irrelevant, retain the finding and explain why filler was rejected; never report an ERROR as a pass.
+19. Report: .tex path, .pdf path, file sizes, section count, keyword coverage %, and deterministic layout findings. Never report layout QA as passed while `layoutValidation.valid` is false.
 
 **Requires:** `tectonic` (preferred — `brew install tectonic`, auto-downloads packages) or `pdflatex` (MiKTeX / TeX Live) on PATH.
 
@@ -106,7 +109,7 @@ Write a JSON file with this structure. `build-cv-latex.mjs` handles template mer
 | `experience[].dates` | string | Date range |
 | `experience[].bullets` | string[] | Reordered and keyword-injected achievement bullets. Wrap a span in `**…**` to emphasise it — the builder renders it as `\textbf{…}` after escaping (see **Markdown bold in bullets** below) |
 | `projects[].name` | string | From cv.md Projects |
-| `projects[].context` | string | Tech stack — appears next to project name |
+| `projects[].context` | string | Project context / tech stack shown in italics next to the roman project name. Separate multiple header segments with `|`; the builder keeps each separator upright and ATS-readable. |
 | `projects[].dates` | string | Date range (or empty) |
 | `projects[].bullets` | string[] | Selected project achievements. Supports the same `**…**` emphasis |
 | `awards[].title` | string | Award name, from cv.md Awards / Honors |

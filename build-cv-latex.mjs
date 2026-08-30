@@ -8,6 +8,7 @@ import { tmpdir } from 'os';
 import { escapeLatex, sanitizeUrl } from './lib/latex-escape.mjs';
 import { resolveTemplate } from './cv-templates.mjs';
 import { stripEmptySections } from './cv-sections-core.mjs';
+import { isMainModule } from './lib/is-main-module.mjs';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const TEMPLATE_PATH = resolve(__dirname, 'templates', 'cv-template.tex');
@@ -65,7 +66,7 @@ function buildEducation(entries) {
     let block = `    \\resumeSubheading\n      {${escapeLatex(e.institution)}}{${escapeLatex(e.location)}}\n      {${escapeLatex(e.degree)}}{${escapeLatex(e.dates)}}`;
     if (Array.isArray(e.coursework) && e.coursework.length > 0) {
       const courses = e.coursework.map(c => escapeLatexBullet(c)).join(', ');
-      block += `\n        \\resumeItemListStart\n            \\resumeItem{\\textbf{Coursework:} ${courses}}\n        \\resumeItemListEnd`;
+      block += `\n        \\resumeItemListStart{1pt}\n            \\resumeItem{\\textbf{Coursework:} ${courses}}\n        \\resumeItemListEnd`;
     }
     blocks.push(block);
   }
@@ -78,13 +79,13 @@ function buildEducation(entries) {
  * @param {Array<object>} entries `experience[]` from the payload
  * @returns {string} LaTeX for the section body, or '' when there is nothing to render
  */
-function buildExperience(entries) {
+export function buildExperience(entries) {
   if (!Array.isArray(entries) || entries.length === 0) return '';
   const blocks = [];
   for (const e of entries) {
     if (!e) continue;
     const bullets = Array.isArray(e.bullets) ? e.bullets.map(b => `            \\resumeItem{${escapeLatexBullet(b)}}`).join('\n') : '';
-    blocks.push(`    \\resumeSubheading\n      {${escapeLatex(e.company)}}{${escapeLatex(e.dates)}}\n      {${escapeLatex(e.role)}}{${escapeLatex(e.location)}}\n      \\resumeItemListStart\n${bullets}\n      \\resumeItemListEnd`);
+    blocks.push(`    \\resumeSubheading\n      {${escapeLatex(e.company)}}{${escapeLatex(e.dates)}}\n      {${escapeLatex(e.role)}}{${escapeLatex(e.location)}}\n      \\resumeExperienceItemListStart\n${bullets}\n      \\resumeItemListEnd`);
   }
   return blocks.join('\n\n');
 }
@@ -98,18 +99,24 @@ function buildExperience(entries) {
  * @param {Array<object>} entries `projects[]` from the payload
  * @returns {string} LaTeX for the section body, or '' when there is nothing to render
  */
-function buildProjects(entries) {
+export function buildProjects(entries) {
   if (!Array.isArray(entries) || entries.length === 0) return '';
   const blocks = [];
   for (const e of entries) {
     if (!e) continue;
-    const context = e.context ? ` \\emph{$|$ ${escapeLatex(e.context)}}` : '';
+    const contextSegments = String(e.context ?? '')
+      .split(/\s*\|\s*/)
+      .map((segment) => segment.trim())
+      .filter(Boolean);
+    const context = contextSegments
+      .map((segment) => ` \\textbar{} \\emph{${escapeLatex(segment)}}`)
+      .join('');
     const url = sanitizeUrl(e.url);
     const nameFormatted = url
       ? `\\href{${escapeLatex(url, 'url')}}{\\textbf{${escapeLatex(e.name)}}}`
       : `\\textbf{${escapeLatex(e.name)}}`;
     const bullets = Array.isArray(e.bullets) ? e.bullets.map(b => `            \\resumeItem{${escapeLatexBullet(b)}}`).join('\n') : '';
-    blocks.push(`    \\resumeProjectHeading\n      {${nameFormatted}${context}}{${escapeLatex(e.dates || '')}}\n      \\resumeItemListStart\n${bullets}\n      \\resumeItemListEnd`);
+    blocks.push(`    \\resumeProjectHeading\n      {${nameFormatted}${context}}{${escapeLatex(e.dates || '')}}\n      \\resumeProjectItemListStart\n${bullets}\n      \\resumeItemListEnd`);
   }
   return blocks.join('\n\n');
 }
@@ -403,4 +410,6 @@ async function runSelfTest() {
   process.exit(0);
 }
 
-main();
+if (isMainModule(import.meta.url)) {
+  main();
+}

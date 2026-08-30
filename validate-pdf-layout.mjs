@@ -5,17 +5,43 @@
  *
  * Poppler's `pdftotext -bbox-layout` supplies page dimensions plus positioned
  * words. This validator uses that geometry to find wrapped bullet endings that
- * are too short to pass as intentional resume layout.
+ * are too short and one-page resumes that leave too much of the template's
+ * usable content height empty.
  */
 
 import { execFileSync } from 'child_process';
-import { existsSync, readdirSync } from 'fs';
+import { existsSync, readFileSync, readdirSync } from 'fs';
 import { dirname, extname, join, resolve } from 'path';
 import { fileURLToPath } from 'url';
 import { isMainModule } from './lib/is-main-module.mjs';
 
 const ROOT = dirname(fileURLToPath(import.meta.url));
 const BULLET_RE = /^(?:[•●◦▪‣‧·]|\uF0B7)$/u;
+const PDF_POINTS_PER_INCH = 72;
+
+function templateBottomMarginPt() {
+  // fullpage's default text block has one-inch margins. The shipped template
+  // moves the top boundary and changes text height symmetrically; folding both
+  // adjustments into the bottom margin keeps this value tied to the template
+  // instead of to the dimensions or content position of any particular PDF.
+  try {
+    const template = readFileSync(join(ROOT, 'templates', 'cv-template.tex'), 'utf8');
+    const adjustment = (dimension) => {
+      const match = template.match(new RegExp(
+        `\\\\addtolength\\{\\\\${dimension}\\}\\{([+-]?(?:\\d+(?:\\.\\d*)?|\\.\\d+))in\\}`,
+      ));
+      return match ? Number(match[1]) : 0;
+    };
+    const marginInches = 1 - adjustment('topmargin') - adjustment('textheight');
+    if (Number.isFinite(marginInches) && marginInches >= 0) {
+      return marginInches * PDF_POINTS_PER_INCH;
+    }
+  } catch {
+    // The validator remains usable if the template is unavailable at runtime.
+  }
+  return 0.3 * PDF_POINTS_PER_INCH;
+}
+
 const DEFAULTS = Object.freeze({
   errorWidthRatio: 0.25,
   warningWidthRatio: 0.50,
@@ -23,6 +49,9 @@ const DEFAULTS = Object.freeze({
   baselineTolerance: 2.25,
   continuationIndentTolerance: 6,
   continuationGapTolerance: 16,
+  templateBottomMarginPt: templateBottomMarginPt(),
+  underfillWarningPt: 36,
+  underfillErrorPt: 58,
 });
 
 function parseAttrs(source) {
@@ -162,13 +191,18 @@ function round(value, digits = 1) {
 export function analyzeBboxLayout(xml, options = {}) {
   const settings = { ...DEFAULTS, ...options };
   const pages = parseBboxLayout(xml);
+  const linesByPage = pages.map((page) => mergeVisualLines(
+    page.fragments,
+    settings.baselineTolerance,
+  ));
   const findings = [];
   let bulletCount = 0;
   let wrappedBulletCount = 0;
   let checkedContinuationLines = 0;
 
-  for (const page of pages) {
-    const lines = mergeVisualLines(page.fragments, settings.baselineTolerance);
+  for (const [pageIndex, page] of pages.entries()) {
+    const lines = linesByPage[pageIndex];
+    if (lines.length === 0) continue;
     const observedRight = Math.max(...lines.map((line) => line.xMax));
     const observedLeft = Math.min(...lines.map((line) => line.xMin));
     // Resume body margins are symmetric in the shipped LaTeX template. Cap an
@@ -220,6 +254,7 @@ export function analyzeBboxLayout(xml, options = {}) {
 
       if (!severity) continue;
       findings.push({
+        type: 'orphan-continuation',
         page: page.number,
         text: finalLine.text,
         bulletText: [start.text, ...continuations.map((line) => line.text)].join(' '),
@@ -229,6 +264,41 @@ export function analyzeBboxLayout(xml, options = {}) {
         utilizationPercent: round(utilization * 100, 1),
         severity,
         reasons,
+      });
+    }
+  }
+
+  let pageUtilization = null;
+  if (pages.length === 1 && pages[0].height > 0 && linesByPage[0].length > 0) {
+    const page = pages[0];
+    const lines = linesByPage[0];
+    const bottomMargin = Math.max(0, settings.templateBottomMarginPt);
+    const usableBottomBoundary = Math.max(0, page.height - bottomMargin);
+    const finalContentY = Math.max(...lines.map((line) => line.yMax));
+    const unusedUsableHeight = Math.max(0, usableBottomBoundary - finalContentY);
+    let severity = 'PASS';
+
+    // Strictly-greater comparisons make the documented 36 pt and 58 pt values
+    // stable boundaries while tolerating small extraction/typography shifts.
+    if (unusedUsableHeight > settings.underfillErrorPt) severity = 'ERROR';
+    else if (unusedUsableHeight > settings.underfillWarningPt) severity = 'WARNING';
+
+    pageUtilization = {
+      type: 'page-utilization',
+      page: page.number,
+      pageHeight: round(page.height, 2),
+      usableBottomBoundary: round(usableBottomBoundary, 2),
+      finalContentY: round(finalContentY, 2),
+      unusedUsableHeight: round(unusedUsableHeight, 2),
+      severity,
+    };
+
+    if (severity !== 'PASS') {
+      findings.push({
+        ...pageUtilization,
+        reasons: [
+          `${pageUtilization.unusedUsableHeight} pt of usable content height remains`,
+        ],
       });
     }
   }
@@ -246,6 +316,9 @@ export function analyzeBboxLayout(xml, options = {}) {
       errorWidthPercent: settings.errorWidthRatio * 100,
       warningWidthPercent: settings.warningWidthRatio * 100,
       maxErrorWords: settings.maxErrorWords,
+      underfillWarningPt: settings.underfillWarningPt,
+      underfillErrorPt: settings.underfillErrorPt,
+      templateBottomMarginPt: round(settings.templateBottomMarginPt, 2),
     },
     summary: {
       pages: pages.length,
@@ -255,6 +328,7 @@ export function analyzeBboxLayout(xml, options = {}) {
       errors,
       warnings,
     },
+    pageUtilization,
     findings,
   };
 }
@@ -336,7 +410,12 @@ export function validatePdfLayout(pdfPath, options = {}) {
 
 function printSummary(result) {
   console.log(`PDF layout QA: ${result.valid ? 'PASS' : 'FAIL'} (${result.summary.errors} error(s), ${result.summary.warnings} warning(s))`);
+  if (result.pageUtilization) {
+    const utilization = result.pageUtilization;
+    console.log(`${utilization.severity} page ${utilization.page} utilization: ${utilization.unusedUsableHeight} pt of usable content height remains (content ends at y=${utilization.finalContentY}; usable bottom y=${utilization.usableBottomBoundary})`);
+  }
   for (const finding of result.findings) {
+    if (finding.type === 'page-utilization') continue;
     console.log(`${finding.severity} page ${finding.page}: ${JSON.stringify(finding.text)} — ${finding.utilizationPercent}% width (${finding.reasons.join(', ')})`);
   }
 }

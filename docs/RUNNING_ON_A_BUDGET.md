@@ -356,7 +356,7 @@ node openai-tailor.mjs \
 Once you have the tailored HTML file, the PDF generator uses Playwright to compile it into a tailored CV PDF.
 
 ```bash
-node generate-pdf.mjs output/cv-candidate-companyname.html output/cv-candidate-companyname-2026-07-07.pdf --format=letter --report=001
+node generate-pdf.mjs output/2026-07-07-companyname-role/Candidate-Resume.html output/2026-07-07-companyname-role/Candidate-Resume.pdf --format=letter --report=001
 ```
 
 **Cost:** 0 tokens, $0.00.

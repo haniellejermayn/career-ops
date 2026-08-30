@@ -14,8 +14,11 @@ function xmlLine(words, yMin, yMax = yMin + 9) {
   return `<line xMin="${words[0][1]}" yMin="${yMin}" xMax="${words.at(-1)[2]}" yMax="${yMax}">${words.map(([text, xMin, xMax]) => xmlWord(text, xMin, xMax, yMin, yMax)).join('')}</line>`;
 }
 
-function fixture(lines) {
-  return `<?xml version="1.0"?><html><body><doc><page width="600" height="840"><flow><block>${lines.join('')}</block></flow></page></doc></body></html>`;
+function fixture(lines, { filled = true, pageHeight = 840 } = {}) {
+  const bottomContent = filled
+    ? xmlLine([['Additional', 30, 80], ['evidence', 85, 130]], 805)
+    : '';
+  return `<?xml version="1.0"?><html><body><doc><page width="600" height="${pageHeight}"><flow><block>${lines.join('')}${bottomContent}</block></flow></page></doc></body></html>`;
 }
 
 function bullet(firstY, finalText, finalWidth, { firstText = 'Built a production system with deterministic validation and reliable execution.', finalWords } = {}) {
@@ -100,4 +103,56 @@ test('fragments from the same baseline are merged before bullet detection', () =
   assert.equal(result.findings.length, 1);
   assert.equal(result.findings[0].severity, 'ERROR');
   assert.equal(result.findings[0].text, 'reliability.');
+});
+
+test('a clearly under-filled one-page resume is an ERROR', () => {
+  const result = analyzeBboxLayout(fixture([
+    xmlLine([['Final', 30, 65], ['content', 70, 120]], 741, 750),
+  ], { filled: false }), { templateBottomMarginPt: 24 });
+
+  assert.equal(result.valid, false);
+  assert.deepEqual(result.pageUtilization, {
+    type: 'page-utilization',
+    page: 1,
+    pageHeight: 840,
+    usableBottomBoundary: 816,
+    finalContentY: 750,
+    unusedUsableHeight: 66,
+    severity: 'ERROR',
+  });
+  assert.equal(result.findings.at(-1).type, 'page-utilization');
+});
+
+test('a moderately under-filled one-page resume is a WARNING', () => {
+  const result = analyzeBboxLayout(fixture([
+    xmlLine([['Final', 30, 65], ['content', 70, 120]], 761, 770),
+  ], { filled: false }), { templateBottomMarginPt: 24 });
+
+  assert.equal(result.valid, true);
+  assert.equal(result.pageUtilization.unusedUsableHeight, 46);
+  assert.equal(result.pageUtilization.severity, 'WARNING');
+});
+
+test('a properly filled one-page resume passes page-utilization QA', () => {
+  const result = analyzeBboxLayout(fixture([
+    xmlLine([['Final', 30, 65], ['content', 70, 120]], 781, 790),
+  ], { filled: false }), { templateBottomMarginPt: 24 });
+
+  assert.equal(result.valid, true);
+  assert.equal(result.pageUtilization.unusedUsableHeight, 26);
+  assert.equal(result.pageUtilization.severity, 'PASS');
+  assert.deepEqual(result.findings, []);
+});
+
+test('the intended page-edge margin is excluded from unused usable height', () => {
+  const result = analyzeBboxLayout(fixture([
+    xmlLine([['Final', 30, 65], ['content', 70, 120]], 809.4, 818.4),
+  ], { filled: false }));
+
+  assert.equal(result.pageUtilization.pageHeight, 840);
+  assert.equal(result.thresholds.templateBottomMarginPt, 21.6);
+  assert.equal(result.pageUtilization.usableBottomBoundary, 818.4);
+  assert.equal(result.pageUtilization.finalContentY, 818.4);
+  assert.equal(result.pageUtilization.unusedUsableHeight, 0);
+  assert.equal(result.pageUtilization.severity, 'PASS');
 });

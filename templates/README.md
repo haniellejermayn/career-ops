@@ -83,11 +83,12 @@ LaTeX template for Overleaf-compatible CV generation. Based on the [sb2nov/resum
 
 **Usage:**
 ```bash
-# Validate and compile .tex → .pdf (requires pdflatex on PATH)
-node generate-latex.mjs output/cv-name-company-date.tex
+# Reserve one shallow directory for this job/resume generation.
+node resume-output.mjs --date 2026-08-30 --company "Acme" --role "AI Engineer" --candidate "Jane Smith"
 
-# Or specify a custom output path
-node generate-latex.mjs output/cv-name-company-date.tex output/custom-name.pdf
+# Build and compile using the returned tex/pdf paths (requires a TeX engine).
+node build-cv-latex.mjs /tmp/cv-jane-acme.json output/2026-08-30-acme-ai-engineer/Jane-Smith-Resume.tex
+node generate-latex.mjs output/2026-08-30-acme-ai-engineer/Jane-Smith-Resume.tex output/2026-08-30-acme-ai-engineer/Jane-Smith-Resume.pdf
 ```
 
 **Prerequisites:** `pdflatex` via [MiKTeX](https://miktex.org/) (Windows) or TeX Live (Linux/macOS). First compilation may auto-install missing LaTeX packages. Alternatively, upload the `.tex` file directly to [Overleaf](https://www.overleaf.com) — no local install needed.

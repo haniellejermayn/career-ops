@@ -350,7 +350,7 @@ Report header:
 **Legitimacy:** {High Confidence | Proceed with Caution | Suspicious}
 **Work Auth:** {✅ Sponsors | ➖ Not needed | ⚠️ Unstated | ⛔ No sponsorship}
 **URL:** {{URL}}
-**PDF:** {output/cv-candidate-{company-slug}-{{DATE}}.pdf if score >= resolved auto_pdf_score_threshold, otherwise a localized equivalent of `not generated — run /career-ops pdf {company-slug} to create on demand` in `language.output`}
+**PDF:** {the job-scoped `pdf` path returned by `resume-output.mjs` if score >= resolved auto_pdf_score_threshold, otherwise a localized equivalent of `not generated — run /career-ops pdf {company-slug} to create on demand` in `language.output`}
 **Batch ID:** {{ID}}
 
 
@@ -429,13 +429,14 @@ If score is greater than or equal to the threshold:
 8. Reorder experience bullets by relevance.
 9. Build a 6-8 item competency grid.
 10. Inject keywords ethically into existing achievements; never invent skills or metrics.
-11. Write HTML to `output/cv-candidate-{company-slug}.html`.
-12. Run:
+11. Reserve a job-scoped directory with `node resume-output.mjs --date {{DATE}} --company "{company}" --role "{role}" --candidate "{candidate full name}"`. Use the returned `html` and `pdf` paths; concurrent or repeated runs advance to `-2`, `-3`, etc. instead of overwriting an existing directory.
+12. Write HTML to the returned `html` path.
+13. Run:
 
 ```bash
 node generate-pdf.mjs \
-  output/cv-candidate-{company-slug}.html \
-  output/cv-candidate-{company-slug}-{{DATE}}.pdf \
+  {html-path} \
+  {pdf-path} \
   --format={letter|a4} \
   --report={{REPORT_NUM}}
 ```

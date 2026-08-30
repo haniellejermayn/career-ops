@@ -54,9 +54,10 @@ latex:
 }
 ```
 
-7. Run: `node patch-latex-content.mjs <source.tex> /tmp/cv-patches-{company}.json output/cv-{candidate}-{company}-{YYYY-MM-DD}.tex`
-8. Run: `node generate-latex.mjs output/cv-{candidate}-{company}-{YYYY-MM-DD}.tex output/cv-{candidate}-{company}-{YYYY-MM-DD}.pdf --compile-only`
-9. Report: family, slot count, patched count, `.tex` path, `.pdf` path (or compile error)
+7. Reserve a job-scoped output directory: `node resume-output.mjs --date {YYYY-MM-DD} --company "{company}" --role "{role}" --candidate "{full name}"`. Use the returned `tex` and `pdf` paths; existing directories receive deterministic `-2`, `-3`, etc. suffixes.
+8. Run: `node patch-latex-content.mjs <source.tex> /tmp/cv-patches-{company}.json {tex-path}`
+9. Run: `node generate-latex.mjs {tex-path} {pdf-path} --compile-only`
+10. Report: family, slot count, patched count, `.tex` path, `.pdf` path (or compile error)
 
 **Requires:** `tectonic` or `pdflatex` on PATH (same as `latex` mode).
 

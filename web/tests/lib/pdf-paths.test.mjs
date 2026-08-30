@@ -32,15 +32,22 @@ function makeRoot({ profileYaml } = {}) {
 test("resolvePdfPaths: happy path builds html + finalPdf from report + profile", () => {
   // Given a root with a resolvable report and a named candidate
   const root = makeRoot();
-  const findReportFile = (input) => (input === "018" ? join(root, "reports", "018-acme-2026-07-01.md") : null);
+  const report = join(root, "reports", "018-acme-2026-07-01.md");
+  mkdirSync(join(root, "reports"), { recursive: true });
+  writeFileSync(report, "# Evaluation: Acme — AI Engineering Intern\n");
+  const findReportFile = (input) => (input === "018" ? report : null);
   try {
     // When resolving paths for report #018
     const result = resolvePdfPaths("018", "2026-07-26", root, findReportFile);
 
-    // Then it returns deterministic scratch + final paths using the candidate/company slugs
+    // Then it returns deterministic scratch + a shallow job-scoped final path.
     assert.equal(result.ok, true);
     assert.equal(result.paths.html, join(root, ".career-ops-web", "pdf-tmp", "cv-web-018.html"));
-    assert.equal(result.paths.finalPdf, join(root, "output", "cv-jane-smith-acme-2026-07-26.pdf"));
+    assert.equal(result.paths.finalPdf, join(root, "output", "2026-07-26-acme-ai-engineering-intern", "Jane-Smith-Resume.pdf"));
+
+    const collision = resolvePdfPaths("018", "2026-07-26", root, findReportFile);
+    assert.equal(collision.ok, true);
+    assert.equal(collision.paths.finalPdf, join(root, "output", "2026-07-26-acme-ai-engineering-intern-2", "Jane-Smith-Resume.pdf"));
   } finally {
     rmSync(root, { recursive: true, force: true });
   }
@@ -92,7 +99,7 @@ test("resolvePdfPaths: missing profile.yml falls back to the default candidate s
 
     // Then it still succeeds, using the "candidate" fallback slug
     assert.equal(result.ok, true);
-    assert.equal(result.paths.finalPdf, join(root, "output", "cv-candidate-globex-2026-07-26.pdf"));
+    assert.equal(result.paths.finalPdf, join(root, "output", "2026-07-26-globex-role", "Candidate-Resume.pdf"));
   } finally {
     rmSync(root, { recursive: true, force: true });
   }
@@ -108,7 +115,7 @@ test("resolvePdfPaths: malformed profile.yml falls back to the default candidate
 
     // Then it still succeeds, using the "candidate" fallback slug rather than throwing
     assert.equal(result.ok, true);
-    assert.equal(result.paths.finalPdf, join(root, "output", "cv-candidate-globex-2026-07-26.pdf"));
+    assert.equal(result.paths.finalPdf, join(root, "output", "2026-07-26-globex-role", "Candidate-Resume.pdf"));
   } finally {
     rmSync(root, { recursive: true, force: true });
   }
@@ -124,7 +131,7 @@ test("resolvePdfPaths: report filename that doesn't match the expected pattern f
 
     // Then it still succeeds, using the "company" fallback slug
     assert.equal(result.ok, true);
-    assert.equal(result.paths.finalPdf, join(root, "output", "cv-jane-smith-company-2026-07-26.pdf"));
+    assert.equal(result.paths.finalPdf, join(root, "output", "2026-07-26-company-role", "Jane-Smith-Resume.pdf"));
   } finally {
     rmSync(root, { recursive: true, force: true });
   }
@@ -140,7 +147,7 @@ test("resolvePdfPaths: profile.yml present but candidate.full_name empty falls b
 
     // Then it still succeeds, using the "candidate" fallback slug
     assert.equal(result.ok, true);
-    assert.equal(result.paths.finalPdf, join(root, "output", "cv-candidate-globex-2026-07-26.pdf"));
+    assert.equal(result.paths.finalPdf, join(root, "output", "2026-07-26-globex-role", "Candidate-Resume.pdf"));
   } finally {
     rmSync(root, { recursive: true, force: true });
   }
