@@ -18,9 +18,12 @@ Export a tailored, ATS-optimized CV as a `.tex` file and compile it to PDF via `
 12. Run: `node build-cv-latex.mjs /tmp/cv-{candidate}-{company}.json output/cv-{candidate}-{company}-{YYYY-MM-DD}.tex`
 13. Run: `node generate-latex.mjs output/cv-{candidate}-{company}-{YYYY-MM-DD}.tex output/cv-{candidate}-{company}-{YYYY-MM-DD}.pdf`
     *(Replace `{candidate}`, `{company}`, `{YYYY-MM-DD}` with actual values.)*
-14. Report: .tex path, .pdf path, file sizes, section count, keyword coverage %
+14. Read `generate-latex.mjs`'s `layoutValidation` result. ERROR findings require a natural rewrite and another compile; WARNING findings should be addressed when wording can remain natural.
+15. Report: .tex path, .pdf path, file sizes, section count, keyword coverage %, and deterministic layout findings. Never report layout QA as passed while `layoutValidation.valid` is false.
 
 **Requires:** `tectonic` (preferred — `brew install tectonic`, auto-downloads packages) or `pdflatex` (MiKTeX / TeX Live) on PATH.
+
+Deterministic post-render layout QA additionally requires Poppler's `pdftotext` on PATH, via `CAREER_OPS_PDFTOTEXT`, or in the repository's existing local Poppler tools directory.
 
 ## Language support
 

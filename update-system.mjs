@@ -156,6 +156,7 @@ const SYSTEM_PATHS = [
   'HIRED.md',
   'theme-style.mjs',
   'generate-latex.mjs',
+  'validate-pdf-layout.mjs',
   'extract-latex-content.mjs',
   'patch-latex-content.mjs',
   'lib/ascii-fold.mjs',

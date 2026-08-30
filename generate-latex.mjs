@@ -18,6 +18,7 @@ import { resolve, basename, dirname, join } from 'path';
 import { execFileSync } from 'child_process';
 import { existsSync, mkdirSync } from 'fs';
 import { isMainModule } from './lib/is-main-module.mjs';
+import { validatePdfLayout } from './validate-pdf-layout.mjs';
 
 const MIN_SECTIONS = 4;
 
@@ -93,6 +94,26 @@ export function validateLatexContent(content, compileOnly) {
       projectHeadings: projectHeadingCount,
     },
   };
+}
+
+/**
+ * Attach deterministic post-render layout QA to a successful compilation.
+ * Compilation and layout validity stay separate so callers can inspect the PDF
+ * that failed QA, while the CLI still exits non-zero until the errors are fixed.
+ */
+export function applyPdfLayoutValidation(report, pdfPath, validator = validatePdfLayout) {
+  try {
+    report.layoutValidation = validator(pdfPath);
+  } catch (error) {
+    report.layoutValidation = {
+      available: false,
+      valid: false,
+      error: error.message,
+      findings: [],
+    };
+  }
+  if (!report.layoutValidation.valid) report.valid = false;
+  return report;
 }
 
 /**
@@ -207,6 +228,7 @@ export async function compileLatexFile(absPath, content, outputPath, compileOnly
         path: targetPdf,
         sizeKB: parseFloat((pdfStat.size / 1024).toFixed(1)),
       };
+      applyPdfLayoutValidation(report, targetPdf);
     } catch (err) {
       report.postCompileError = `Failed to finalize PDF: ${err.message}`;
     }
@@ -246,7 +268,7 @@ async function main() {
 
   const report = await compileLatexFile(absPath, content, outputPath || null, compileOnly);
   console.log(JSON.stringify(report, null, 2));
-  process.exit(report.compiled ? 0 : (report.valid ? 1 : 1));
+  process.exit(report.compiled && report.layoutValidation?.valid === true ? 0 : 1);
 }
 
 if (isMainModule(import.meta.url)) {
