@@ -1,0 +1,181 @@
+%-------------------------
+% Career-Ops LaTeX CV Template
+% Based on: Gabriel Sison / sb2nov resume template
+% License: MIT
+%------------------------
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%  Random Stuff %%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\documentclass[a4paper,11pt]{article}
+\usepackage{latexsym}
+\usepackage[empty]{fullpage}
+\usepackage{titlesec}
+\usepackage{marvosym}
+\usepackage[usenames,dvipsnames]{color}
+\usepackage{verbatim}
+\usepackage{enumitem}
+\usepackage[hidelinks]{hyperref}
+\usepackage{fancyhdr}
+\usepackage[english]{babel}
+\usepackage{tabularx}
+\usepackage{fontawesome}
+\usepackage{multicol}
+\setlength{\multicolsep}{-3.0pt}
+\setlength{\columnsep}{-1pt}
+\input{glyphtounicode}
+\pagestyle{fancy}
+\fancyhf{} % clear all header and footer fields
+\fancyfoot{}
+\renewcommand{\headrulewidth}{0pt}
+\renewcommand{\footrulewidth}{0pt}
+% Adjust margins
+\addtolength{\oddsidemargin}{-0.6in}
+\addtolength{\evensidemargin}{-0.5in}
+\addtolength{\textwidth}{1.19in}
+\addtolength{\topmargin}{-.7in}
+\addtolength{\textheight}{1.4in}
+\urlstyle{same}
+\raggedbottom
+\raggedright
+\setlength{\tabcolsep}{0in}
+% Sections formatting
+\titleformat{\section}{
+  \vspace{-7pt}\scshape\raggedright\large\bfseries
+}{}{0em}{}[\color{black}\titlerule \vspace{0pt}]
+% Ensure that generate pdf is machine readable/ATS parsable
+\pdfgentounicode=1
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%  Commands  %%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\newcommand{\resumeItem}[1]{
+  \item\small{#1}
+}
+\newcommand{\resumeSubheading}[4]{
+  \vspace{-3pt}\item
+    \begin{tabular*}{1.0\textwidth}[t]{l@{\extracolsep{\fill}}r}
+      \textbf{#1} & \textbf{\small #2} \\
+      \textit{\small#3} & \textit{\small #4} \\
+    \end{tabular*}\vspace{-7pt}
+}
+\newcommand{\resumeSubheadingContinue}[2]{
+  \vspace{-3pt}
+    \begin{tabular*}{1.0\textwidth}[t]{l@{\extracolsep{\fill}}r}
+      \textit{\small#1} & \textit{\small #2} \\
+    \end{tabular*}\vspace{-7pt}
+}
+\newcommand{\resumeProjectHeading}[2]{
+  \vspace{-3pt}\item
+    \begin{tabular*}{1.0\textwidth}[t]{l@{\extracolsep{\fill}}r}
+      \textbf{#1} & \textbf{\small #2} \\
+    \end{tabular*}\vspace{-7pt}
+}
+\newcommand{\resumeSubItem}[1]{\resumeItem{#1}}
+\renewcommand\labelitemi{$\vcenter{\hbox{\tiny$\bullet$}}$}
+\renewcommand\labelitemii{$\vcenter{\hbox{\tiny$\bullet$}}$}
+\newcommand{\resumeSubHeadingListStart}{\begin{itemize}[leftmargin=0.0in, label={}]}
+\newcommand{\resumeSubHeadingListEnd}{\end{itemize}}
+\newcommand{\resumeItemListStart}[1]{\vspace{#1}\begin{itemize}[itemsep=0.8pt, parsep=0pt, topsep=0pt, partopsep=0pt]}
+\newcommand{\resumeExperienceItemListStart}{\resumeItemListStart{1pt}}
+\newcommand{\resumeProjectItemListStart}{\resumeItemListStart{-6pt}}
+\newcommand{\resumeItemListEnd}{\end{itemize}\vspace{0pt}}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%  Heading  %%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{document}
+    \begin{center}
+        % NAME
+        {\Huge\scshape Hanielle Jermayn E. Chua}
+        % SUBHEADING
+        \\ Metro Manila, Philippines \textbar{} +63 993 935 5665\\
+        \small
+        % EMAIL
+        % EMAIL_URL already carries its scheme: sanitizeUrl() prefixes bare
+        % addresses with mailto:, so the template must not add a second one.
+        \href{mailto:chua.haniellejermayn@gmail.com}{\raisebox{-0.2\height}\faEnvelope\  \underline{chua.haniellejermayn@gmail.com}} ~
+        % LINKEDIN
+        \href{https://www.linkedin.com/in/hanielle-jermayn}{\raisebox{-0.2\height}\faLinkedin\ \underline{linkedin.com/in/hanielle-jermayn}}  ~
+        % GITHUB
+        \href{https://github.com/haniellejermayn}{\raisebox{-0.2\height}\faGithub\ \underline{github.com/haniellejermayn}}
+    \end{center}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%  Education  %%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Education}
+  \resumeSubHeadingListStart
+    \resumeSubheading
+      {De La Salle University - Manila}{CGPA: 3.941 / 4.000}
+      {BS Computer Science, Major in Software Technology}{Expected August 2027}
+\resumeItemListStart{1pt}
+\resumeItem{Consistent First Honors Dean's Lister; Summa Cum Laude standing}
+\resumeItem{Aboitiz Future Leaders Scholar (1 of 10 selected); DOST-SEI Merit Scholar}
+\resumeItemListEnd
+  \resumeSubHeadingListEnd
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%  Experience  %%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Work Experience}
+  \resumeSubHeadingListStart
+    \resumeSubheading
+      {Fuller Focus (Foundry for Good)}{May 2026 - Present}
+      {AI Engineer Intern}{}
+      \resumeExperienceItemListStart
+            \resumeItem{Built a nonprofit web-research workflow spanning crawling, structured extraction, evidence validation, APIs, and React interfaces to help sales teams identify and qualify prospects.}
+            \resumeItem{Developed multi-page contact discovery with staff-page probing, email validation, deduplication, and source checks to extract reliable contact information from varied nonprofit websites.}
+            \resumeItem{Implemented durable asynchronous research jobs with persisted results, retries, timeouts, cancellation, and partial-failure handling; dispatched production workers through Google Cloud Run Jobs.}
+            \resumeItem{Benchmarked 3 LLM variants across 36 organization/model runs on extraction quality, latency, and estimated cost to select models for nonprofit contact discovery based on measured tradeoffs.}
+            \resumeItem{Added SSRF-safe fetching, redirect checks, and organization-identity validation to protect web-research boundaries; validated source domains and built diagnostics exports that avoid exposing secrets.}
+      \resumeItemListEnd
+
+    \resumeSubheading
+      {Aboitiz Foods}{February 2026 - April 2026}
+      {Software Engineer Intern}{}
+      \resumeExperienceItemListStart
+            \resumeItem{Worked with legal and procurement stakeholders across multiple countries to build Agreemate, a React/NestJS contract platform covering review, execution, expiry, and renewal workflows.}
+            \resumeItem{Automated DOCX contract generation and synchronized per-user access with Google Drive; used database transactions and rollback cleanup to keep document and workflow operations consistent.}
+            \resumeItem{Reduced repeated Google Sheets calls through bulk catalog reads, caching, and in-memory filtering; consolidated valid order lines into one batched write regardless of line-item count.}
+            \resumeItem{Implemented parallel legal and department reviews, country-based lawyer assignment, and re-review after counterparty feedback, with immutable version and action histories for traceability.}
+      \resumeItemListEnd
+
+    \resumeSubheading
+      {Bids n Buys}{February 2025 - July 2025}
+      {Blockchain Developer Intern \textbar{} Junior Blockchain Developer (Promoted)}{}
+      \resumeExperienceItemListStart
+            \resumeItem{Built a serverless TypeScript invoicing API on AWS Lambda and a MongoDB-backed crypto funding workflow; developed an Angular wallet with Jest unit tests and Cypress end-to-end tests.}
+            \resumeItem{Created a Merkle-proof verification system that submitted hashes to Cardano for integrity verification; managed Linux-based Cardano nodes with Docker Swarm and repeatable scripts.}
+      \resumeItemListEnd
+  \resumeSubHeadingListEnd
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%  PROJECTS  %%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Selected Projects}
+\resumeSubHeadingListStart
+    \resumeProjectHeading
+      {\href{https://github.com/haniellejermayn/wesm-price-prediction}{\textbf{WESM Price Prediction}} \textbar{} \emph{Machine Learning Project} \textbar{} \emph{Python, scikit-learn, PyTorch}}{}
+      \resumeProjectItemListStart
+            \resumeItem{Built an electricity-market ML pipeline and benchmarked five model families for price prediction and spike detection; best models achieved approximately PHP 930/MWh RMSE and 0.947 ROC-AUC.}
+      \resumeItemListEnd
+
+    \resumeProjectHeading
+      {\textbf{JJ Apartments} \textbar{} \emph{Academic Client Project} \textbar{} \emph{Next.js, Spring Boot, MySQL}}{}
+      \resumeProjectItemListStart
+            \resumeItem{Led a 7-member Agile team building a property-management app for a real client, coordinating sprint planning and priorities; built GitHub Actions CI/CD and deployed services through Vercel and Render.}
+      \resumeItemListEnd
+
+    \resumeProjectHeading
+      {\href{https://github.com/haniellejermayn/IMDb-DistributedDatabase}{\textbf{IMDb Distributed Database}} \textbar{} \emph{MySQL, Python, Flask, Docker}}{}
+      \resumeProjectItemListStart
+            \resumeItem{Built a three-node MySQL database with horizontal fragmentation, replication, concurrency control, and failure recovery; used Flask and Docker to manage approximately 40,000+ IMDb records.}
+      \resumeItemListEnd
+\resumeSubHeadingListEnd
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%  Technical Skills  %%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Technical Skills}
+\vspace{-7pt}
+\begin{itemize}
+[leftmargin=0.15in, label={}]\small{\item{
+        \textbf{Languages}{: Python, TypeScript/JavaScript, SQL, Java} \\
+        \textbf{Web \& Data}{: React, Next.js, NestJS, FastAPI, REST APIs, asyncio, HTTPX, MySQL, MongoDB, SQLite} \\
+        \textbf{AI \& ML}{: Anthropic API, Gemini API, Amazon Bedrock, PyTorch, scikit-learn} \\
+        \textbf{Tools}{: Git, Docker, Google Cloud Run, AWS Lambda, GitHub Actions, pytest, Cypress, Playwright} \\
+}}
+\end{itemize}
+
+%%%%  END  %%%%
+
+\end{document}
+
+
