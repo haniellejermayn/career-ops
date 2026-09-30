@@ -14,7 +14,7 @@ Export a tailored, ATS-optimized CV as a `.tex` file and compile it to PDF via `
 8. Select top 3-4 most relevant projects for the offer, and populate `awards[]` from `cv.md`'s Awards / Honors section when it has entries that support the role (omit the key otherwise — the section is dropped, header included; never invent an award)
 9. Reorder experience bullets by JD relevance
 10. Inject keywords naturally into existing achievements
-11. Reserve a job-scoped output directory: `node resume-output.mjs --date {YYYY-MM-DD} --company "{company}" --role "{role}" --candidate "{full name}"`. Use the printed `tex` and `pdf` paths for this run. The allocator creates `output/{date}-{company-slug}-{role-slug}/` and advances to `-2`, `-3`, etc. instead of reusing an existing directory.
+11. Resolve the application's draft directory: `node resume-output.mjs --date {YYYY-MM-DD} --company "{company}" --role "{role}" --candidate "{full name}"`. For revisions, retain the original application date and identity. Use the returned `tex` and `pdf` paths in place; existing draft directories are reused. Follow `modes/_custom.md` for confirmed-submission snapshots.
 12. Build a JSON payload (see schema below) and write it to `/tmp/cv-{candidate}-{company}.json`.
 13. Run: `node build-cv-latex.mjs /tmp/cv-{candidate}-{company}.json {tex-path}`.
 14. Run: `node generate-latex.mjs {tex-path} {pdf-path}`. The filenames share the short professional basename returned by `resume-output.mjs` (for example, `Hanielle-Chua-Resume.tex` and `Hanielle-Chua-Resume.pdf`).

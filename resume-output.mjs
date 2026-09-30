@@ -1,13 +1,13 @@
 #!/usr/bin/env node
 
 /**
- * Reserve a shallow, job-scoped directory for one generated resume.
+ * Resolve a stable, job-scoped directory for resume drafts.
  *
- * The allocator creates the directory atomically and advances through stable
- * numeric suffixes when a matching application directory already exists.
+ * Draft revisions reuse the same directory. Use the application's original date
+ * on later revisions; submitted artifacts belong in separate snapshots.
  */
 
-import { mkdirSync } from 'fs';
+import { existsSync, mkdirSync } from 'fs';
 import { join, resolve } from 'path';
 import { parseArgs } from 'util';
 import { slugifySegment } from './application-artifacts.mjs';
@@ -65,8 +65,8 @@ function pathsFor(outputRoot, key, basename) {
 }
 
 /**
- * Atomically reserve the next available job-scoped output directory.
- * Existing directories are never reused: base, base-2, base-3, ...
+ * Create or reuse the application's draft directory without modifying files.
+ * Legacy submissions must be preserved before their former directory is reused.
  */
 export function allocateResumeOutputPaths({
   date,
@@ -78,19 +78,12 @@ export function allocateResumeOutputPaths({
   const outputRoot = resolve(root);
   const baseKey = resumeOutputDirectoryName({ date, company, role });
   const basename = resumeOutputBasename(candidate);
-  mkdirSync(outputRoot, { recursive: true });
-
-  for (let run = 1; ; run += 1) {
-    const key = run === 1 ? baseKey : `${baseKey}-${run}`;
-    const paths = pathsFor(outputRoot, key, basename);
-    try {
-      mkdirSync(paths.root);
-      return paths;
-    } catch (error) {
-      if (error?.code === 'EEXIST') continue;
-      throw error;
-    }
+  const paths = pathsFor(outputRoot, baseKey, basename);
+  if (existsSync(join(paths.root, 'submission.json'))) {
+    throw new Error('This directory contains a legacy submission.json. Preserve the submitted files in a submission snapshot before revising this draft.');
   }
+  mkdirSync(paths.root, { recursive: true });
+  return paths;
 }
 
 const KNOWN_FLAGS = ['--date', '--company', '--role', '--candidate', '--root', '--help', '-h'];
@@ -98,11 +91,11 @@ const VALUE_FLAGS = ['--date', '--company', '--role', '--candidate', '--root'];
 const USAGE = `Usage:
   node resume-output.mjs --date YYYY-MM-DD --company NAME --role ROLE --candidate NAME [--root DIR]
 
-Reserves a new output/<date>-<company>-<role>[-N]/ directory and prints the
-professional HTML, Markdown, TeX, and PDF paths as JSON. Existing directories
-are never reused or overwritten.
+Creates or reuses output/<date>-<company>-<role>/ and prints the professional
+HTML, Markdown, TeX, and PDF draft paths as JSON. Resolving paths does not modify
+existing files. Retain the original application date for later revisions.
 
-  --date DATE       generation date in YYYY-MM-DD form (required)
+  --date DATE       original application draft date, YYYY-MM-DD (required)
   --company NAME    employer/company name (required)
   --role ROLE       target role title (required)
   --candidate NAME  candidate full name used for the resume basename (required)

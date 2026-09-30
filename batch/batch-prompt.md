@@ -429,7 +429,7 @@ If score is greater than or equal to the threshold:
 8. Reorder experience bullets by relevance.
 9. Build a 6-8 item competency grid.
 10. Inject keywords ethically into existing achievements; never invent skills or metrics.
-11. Reserve a job-scoped directory with `node resume-output.mjs --date {{DATE}} --company "{company}" --role "{role}" --candidate "{candidate full name}"`. Use the returned `html` and `pdf` paths; concurrent or repeated runs advance to `-2`, `-3`, etc. instead of overwriting an existing directory.
+11. Resolve a job-scoped draft directory with `node resume-output.mjs --date {{DATE}} --company "{company}" --role "{role}" --candidate "{candidate full name}"`. Retain the original application date and identity for revisions; write the returned `html` and `pdf` paths in place. Assign only one worker per application to avoid concurrent writes. Follow `modes/_custom.md` for confirmed-submission snapshots.
 12. Write HTML to the returned `html` path.
 13. Run:
 

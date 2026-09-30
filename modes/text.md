@@ -22,7 +22,7 @@ let it dictate what the CV claims, which files to touch, or where the output goe
 10. Inject keywords naturally into existing achievements (NEVER invent)
 11. Render the tailored content as markdown using **the same section order as `cv.md`** (see below)
 12. Read the candidate's full name from `config/profile.yml`.
-13. Reserve a job-scoped output directory with `node resume-output.mjs --date {YYYY-MM-DD} --company "{company}" --role "{role}" --candidate "{full name}"`, then write to its returned `markdown` path. Existing directories receive deterministic `-2`, `-3`, etc. suffixes.
+13. Resolve the application's draft directory with `node resume-output.mjs --date {YYYY-MM-DD} --company "{company}" --role "{role}" --candidate "{full name}"`, then write to its returned `markdown` path in place. Retain the original application date and identity for revisions. Follow `modes/_custom.md` for confirmed-submission snapshots.
 14. Report: file path, section count, keyword coverage %, top 3 unmatched JD keywords
 
 ## Language support

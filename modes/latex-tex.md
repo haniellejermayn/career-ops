@@ -54,7 +54,7 @@ latex:
 }
 ```
 
-7. Reserve a job-scoped output directory: `node resume-output.mjs --date {YYYY-MM-DD} --company "{company}" --role "{role}" --candidate "{full name}"`. Use the returned `tex` and `pdf` paths; existing directories receive deterministic `-2`, `-3`, etc. suffixes.
+7. Resolve the application's draft directory: `node resume-output.mjs --date {YYYY-MM-DD} --company "{company}" --role "{role}" --candidate "{full name}"`. Retain the original application date and identity for revisions and edit the returned `tex` and `pdf` paths in place. Follow `modes/_custom.md` for confirmed-submission snapshots.
 8. Run: `node patch-latex-content.mjs <source.tex> /tmp/cv-patches-{company}.json {tex-path}`
 9. Run: `node generate-latex.mjs {tex-path} {pdf-path} --compile-only`
 10. Report: family, slot count, patched count, `.tex` path, `.pdf` path (or compile error)
