@@ -51,6 +51,17 @@ func TestComputeProgressMetricsCountsHiredInEveryStage(t *testing.T) {
 	}
 }
 
+func TestComputeProgressMetricsDoesNotTreatSavedAsEvaluatedOrActive(t *testing.T) {
+	pm := ComputeProgressMetrics(appsWithStatuses("Saved", "Evaluated"))
+
+	if got := stageCount(pm, "Evaluated"); got != 1 {
+		t.Errorf("Evaluated = %d, want 1 (Saved is a pre-evaluation state)", got)
+	}
+	if pm.ActiveApps != 1 {
+		t.Errorf("ActiveApps = %d, want 1 (Saved is not an active application)", pm.ActiveApps)
+	}
+}
+
 // With a hire in the denominator and numerator, the rates must be real numbers
 // rather than the 0%% the missing tiers produced.
 func TestComputeProgressMetricsRatesIncludeHired(t *testing.T) {

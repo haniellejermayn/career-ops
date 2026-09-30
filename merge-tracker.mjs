@@ -138,7 +138,7 @@ try {
 }
 
 // Canonical states and aliases
-const CANONICAL_STATES = ['Evaluated', 'Applied', 'Responded', 'Interview', 'Offer', 'Hired', 'Rejected', 'Discarded', 'SKIP'];
+const CANONICAL_STATES = ['Saved', 'Evaluated', 'Applied', 'Responded', 'Interview', 'Offer', 'Hired', 'Rejected', 'Discarded', 'SKIP'];
 
 /**
  * Convert raw addition status text into one canonical tracker state.
@@ -161,6 +161,7 @@ function validateStatus(status) {
 
   // Aliases
   const aliases = {
+    'inbox': 'Saved', 'interested': 'Saved', 'bookmarked': 'Saved',
     // Spanish → English
     'evaluada': 'Evaluated', 'condicional': 'Evaluated', 'hold': 'Evaluated', 'evaluar': 'Evaluated', 'verificar': 'Evaluated',
     'aplicado': 'Applied', 'enviada': 'Applied', 'aplicada': 'Applied', 'applied': 'Applied', 'sent': 'Applied',

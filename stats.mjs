@@ -38,7 +38,7 @@ const STATUS_LOG_FILE = join(DATA_ROOT, 'data', 'status-log.tsv');
 const PORTALS_FILE = join(DATA_ROOT, 'portals.yml');
 const PORTAL_HEALTH_FILE = join(DATA_ROOT, 'data', 'portal-health.tsv');
 
-const CANONICAL_STATUSES = ['Evaluated', 'Applied', 'Responded', 'Interview', 'Offer', 'Hired', 'Rejected', 'Discarded', 'SKIP'];
+const CANONICAL_STATUSES = ['Saved', 'Evaluated', 'Applied', 'Responded', 'Interview', 'Offer', 'Hired', 'Rejected', 'Discarded', 'SKIP'];
 
 // In-flight applications. Deliberately NARROWER than the dashboard's
 // ActiveApps (which also counts Evaluated): an evaluated-but-never-sent row is

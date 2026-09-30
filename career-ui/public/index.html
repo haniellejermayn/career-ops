@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <meta name="description" content="A local, unified Career-Ops job tracker.">
+  <title>Career-Ops Tracker</title>
+  <link rel="stylesheet" href="/styles.css">
+  <script src="/app.js" defer></script>
+</head>
+<body>
+  <a class="skip-link" href="#main-content">Skip to content</a>
+  <header class="site-header">
+    <div class="shell masthead">
+      <div class="identity"><strong>Career-Ops</strong><span>Personal job tracker</span></div>
+      <div class="header-actions">
+        <button class="button quiet" id="powershell-button" type="button">Open PowerShell</button>
+        <button class="button quiet" id="refresh-button" type="button">Refresh</button>
+        <button class="button primary" id="add-record-button" type="button">Add job</button>
+      </div>
+    </div>
+    <nav class="shell tabs" aria-label="Workspace sections">
+      <button class="nav-item is-active" type="button" data-view="tracker" aria-current="page">Tracker <span id="record-count">0</span></button>
+      <button class="nav-item" type="button" data-view="guide">How to use</button>
+    </nav>
+  </header>
+
+  <main id="main-content" class="shell" tabindex="-1">
+    <header class="page-header">
+      <div><h1 id="view-title">Job tracker</h1><p id="view-subtitle">Saved jobs and applications in one place. Update status directly in the table.</p></div>
+    </header>
+    <div id="loading-state" class="loading-state" aria-live="polite">Loading your tracker…</div>
+
+    <section id="tracker-view" class="view" aria-labelledby="view-title" hidden>
+      <div class="toolbar">
+        <label class="search-field"><span class="sr-only">Search jobs</span><input id="record-search" type="search" placeholder="Search company, role, location, or notes"></label>
+        <label class="filter-field"><span>Status</span><select id="status-filter"><option value="">All statuses</option></select></label>
+        <p class="result-count" id="record-result-count">0 jobs</p>
+      </div>
+      <div class="table-wrap">
+        <table class="data-table">
+          <thead><tr><th scope="col">Company</th><th scope="col">Role</th><th scope="col">Status</th><th scope="col">Job link</th><th scope="col">Submitted</th><th scope="col">Location</th><th scope="col">Deadline</th><th scope="col">Compensation</th><th scope="col">Resume</th><th scope="col"><span class="sr-only">Actions</span></th></tr></thead>
+          <tbody id="record-rows"></tbody>
+        </table>
+      </div>
+      <div class="empty-state" id="record-empty" hidden>
+        <h2>No jobs yet</h2><p>Add a saved job or application. Only one identifying field is needed.</p>
+        <button class="button primary" type="button" data-open-record>Add job</button>
+      </div>
+    </section>
+
+    <section id="guide-view" class="view guide" aria-labelledby="view-title" hidden>
+      <section class="guide-section">
+        <h2>Normal flow</h2>
+        <ol class="workflow-list">
+          <li><strong>Save</strong><span>Add an interesting job with status <em>Saved</em>. Company, role, and URL may be filled later.</span></li>
+          <li><strong>Review</strong><span>Use <em>Ask Career-Ops</em> for a full evaluation, or update the row yourself.</span></li>
+          <li><strong>Prepare</strong><span>Choose a baseline, an existing PDF, or ask Career-Ops to decide whether to reuse, edit, or regenerate.</span></li>
+          <li><strong>Apply</strong><span>Submit the application yourself, then change the status to <em>Applied</em> and record the submission date.</span></li>
+          <li><strong>Follow up</strong><span>Keep updating status as replies, interviews, and outcomes arrive.</span></li>
+        </ol>
+      </section>
+      <section class="guide-section">
+        <h2>Resume choices</h2>
+        <dl class="reference-list">
+          <div><dt>Baseline</dt><dd>Copies the selected baseline into the job's draft folder. Later revisions reuse that folder. Adding PDFs under <code>local/resume-baselines/</code> adds options automatically.</dd></div>
+          <div><dt>Ask Career-Ops</dt><dd>Opens PowerShell with a job-specific prompt. Career-Ops decides between reuse, reuse with edits, or a new tailored resume.</dd></div>
+          <div><dt>Existing PDF</dt><dd>Links an already generated PDF from <code>output/</code>.</dd></div>
+          <div><dt>No resume</dt><dd>Leaves the row without a linked file.</dd></div>
+        </dl>
+      </section>
+      <section class="guide-section">
+        <h2>Important behavior</h2>
+        <dl class="reference-list">
+          <div><dt>Status changes</dt><dd>Never choose, copy, or generate a resume automatically.</dd></div>
+          <div><dt>Delete</dt><dd>Removes only the tracker row. Existing reports and resume files stay on disk.</dd></div>
+          <div><dt>Career-Ops data</dt><dd>The interface reads and writes the same tracker and pipeline files used by the normal Career-Ops workflow.</dd></div>
+        </dl>
+      </section>
+    </section>
+  </main>
+
+  <dialog id="record-dialog">
+    <form id="record-form" class="dialog-form">
+      <div class="dialog-heading"><div><h2 id="record-dialog-title">Add job</h2><p>All fields are optional, but add a company, role, or job URL.</p></div><button class="icon-button" type="button" data-close-dialog aria-label="Close dialog">×</button></div>
+      <input type="hidden" name="recordId">
+      <div class="field-pair"><label>Company <input name="company" autocomplete="organization"></label><label>Role <input name="role"></label></div>
+      <label>Job URL <input name="url" type="url" placeholder="https://company.com/jobs/123"></label>
+      <div class="field-pair"><label>Status <select name="status"></select></label><label>Date submitted <input name="dateSubmitted" type="date"></label></div>
+      <div class="field-pair"><label>Location <input name="location"></label><label>Deadline <input name="deadline" type="date"></label></div>
+      <label>Compensation <input name="compensation" placeholder="Salary, rate, or range"></label>
+      <label>Resume <select name="resumeChoice"></select></label>
+      <p class="form-note">Selecting a baseline updates the job-specific draft copy. It does not change the application status.</p>
+      <label>Notes <textarea name="notes" rows="4"></textarea></label>
+      <p class="form-error" data-form-error role="alert" hidden></p>
+      <div class="dialog-actions"><button class="button quiet" type="button" data-close-dialog>Cancel</button><button class="button primary" type="submit">Save</button></div>
+    </form>
+  </dialog>
+
+  <dialog id="delete-dialog" class="small-dialog">
+    <form id="delete-form" class="dialog-form">
+      <div class="dialog-heading"><div><h2>Delete tracker row?</h2><p id="delete-record-label"></p></div><button class="icon-button" type="button" data-close-dialog aria-label="Close dialog">×</button></div>
+      <input type="hidden" name="recordId">
+      <p class="form-note">This removes the row only. Reports and resume files are preserved.</p>
+      <p class="form-error" data-form-error role="alert" hidden></p>
+      <div class="dialog-actions"><button class="button quiet" type="button" data-close-dialog>Cancel</button><button class="button danger" type="submit">Delete row</button></div>
+    </form>
+  </dialog>
+  <div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
+</body>
+</html>

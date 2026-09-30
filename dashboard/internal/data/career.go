@@ -538,6 +538,8 @@ func NormalizeStatus(raw string) string {
 
 	switch {
 	// Most restrictive first — accepts English, Spanish, and Turkish
+	case s == "saved" || s == "inbox" || s == "interested" || s == "bookmarked":
+		return "saved"
 	case s == "hired" || s == "contratado" || s == "contratada" || s == "accepted" || s == "accept" || s == "kabul edildi" || s == "kabul_edildi" || s == "işe alındı" || s == "ise alindi":
 		return "hired"
 	case strings.Contains(s, "no aplicar") || strings.Contains(s, "no_aplicar") || s == "skip" || strings.Contains(s, "geo blocker") || strings.Contains(s, "uygun değil") || strings.Contains(s, "uygun_değil") || strings.Contains(s, "uygun degil") || strings.Contains(s, "uygun_degil"):
@@ -892,7 +894,7 @@ func statusCellIndex(cells []string, canonicalIdx int, want string) int {
 // is safe to treat the cell as the Status column.
 func isCanonicalStatusValue(cell string) bool {
 	switch NormalizeStatus(cell) {
-	case "evaluated", "applied", "responded", "interview", "offer", "hired", "rejected", "discarded", "skip":
+	case "saved", "evaluated", "applied", "responded", "interview", "offer", "hired", "rejected", "discarded", "skip":
 		return true
 	}
 	return false
@@ -933,14 +935,16 @@ func StatusPriority(status string) int {
 		return 3
 	case "evaluated":
 		return 4
-	case "skip":
+	case "saved":
 		return 5
-	case "rejected":
+	case "skip":
 		return 6
-	case "discarded":
+	case "rejected":
 		return 7
-	default:
+	case "discarded":
 		return 8
+	default:
+		return 9
 	}
 }
 
@@ -970,7 +974,7 @@ func ComputeProgressMetrics(apps []model.CareerApplication) model.ProgressMetric
 		if norm == "offer" || norm == "hired" {
 			pm.TotalOffers++
 		}
-		if norm != "skip" && norm != "rejected" && norm != "discarded" {
+		if norm != "saved" && norm != "skip" && norm != "rejected" && norm != "discarded" {
 			pm.ActiveApps++
 		}
 	}
@@ -987,13 +991,14 @@ func ComputeProgressMetrics(apps []model.CareerApplication) model.ProgressMetric
 	// canonical funnel definition, whose docstring already describes this exact
 	// math as mirroring this function.
 	total := len(apps)
+	evaluated := total - statusCounts["saved"]
 	applied := statusCounts["applied"] + statusCounts["responded"] + statusCounts["interview"] + statusCounts["offer"] + statusCounts["hired"] + statusCounts["rejected"]
 	responded := statusCounts["responded"] + statusCounts["interview"] + statusCounts["offer"] + statusCounts["hired"]
 	interview := statusCounts["interview"] + statusCounts["offer"] + statusCounts["hired"]
 	offer := statusCounts["offer"] + statusCounts["hired"]
 
 	pm.FunnelStages = []model.FunnelStage{
-		{Label: "Evaluated", Count: total, Pct: 100.0},
+		{Label: "Evaluated", Count: evaluated, Pct: safePct(evaluated, total)},
 		{Label: "Applied", Count: applied, Pct: safePct(applied, total)},
 		{Label: "Responded", Count: responded, Pct: safePct(responded, applied)},
 		{Label: "Interview", Count: interview, Pct: safePct(interview, applied)},

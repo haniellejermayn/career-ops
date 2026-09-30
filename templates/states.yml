@@ -14,6 +14,12 @@
 # added here can't silently fall through as "unrecognized."
 
 states:
+  - id: saved
+    label: Saved
+    aliases: [inbox, interested, bookmarked]
+    description: Job saved for later review
+    dashboard_group: evaluated
+
   - id: evaluated
     label: Evaluated
     aliases: [evaluada, condicional, hold, evaluar, verificar, değerlendirildi, degerlendirildi]

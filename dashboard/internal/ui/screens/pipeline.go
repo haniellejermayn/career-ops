@@ -206,6 +206,7 @@ type StatusPair struct {
 // remaining options kept in their original relative order behind it.
 func getStatusPairs(currentNormalized string) []StatusPair {
 	base := []StatusPair{
+		{"Saved", "Saved"},
 		{i18n.Current.StatusEvaluated, "Evaluated"},
 		{i18n.Current.StatusApplied, "Applied"},
 		{i18n.Current.StatusResponded, "Responded"},

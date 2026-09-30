@@ -499,6 +499,8 @@ func TestNormalizeStatus(t *testing.T) {
 		{"uygun degil", "skip"},
 
 		// English status strings
+		{"Saved", "saved"},
+		{"bookmarked", "saved"},
 		{"Evaluated", "evaluated"},
 		{"Applied", "applied"},
 		{"Responded", "responded"},
